@@ -13,7 +13,7 @@
 </p>
 
 ### *A Transparent Machine Learning System for Understanding Car Prices Like a Human Appraiser*
-   
+    
 ---
 
 # Table of Contents
