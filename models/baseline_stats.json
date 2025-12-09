@@ -1,0 +1,36 @@
+{
+  "baseline_features": {
+    "car_age": 8.8805,
+    "Engine Size": 3.45845,
+    "Mileage": 150953.1305,
+    "km_per_year": 48973.69444344683,
+    "Brand": "Toyota",
+    "Fuel Type": "Diesel",
+    "Condition": "Used",
+    "Transmission": "Manual"
+  },
+  "groups": {
+    "base_spec": [
+      "Engine Size"
+    ],
+    "brand": [
+      "Brand"
+    ],
+    "age": [
+      "car_age"
+    ],
+    "mileage": [
+      "Mileage",
+      "km_per_year"
+    ],
+    "fuel": [
+      "Fuel Type"
+    ],
+    "transmission": [
+      "Transmission"
+    ],
+    "seller": [
+      "Condition"
+    ]
+  }
+}
