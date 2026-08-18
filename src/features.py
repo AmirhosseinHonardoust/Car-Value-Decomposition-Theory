@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Tuple
-
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -22,7 +20,7 @@ def add_brand_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_feature_matrix(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+def get_feature_matrix(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """Return feature matrix X and target y for modeling."""
     df = add_brand_column(df)
 
