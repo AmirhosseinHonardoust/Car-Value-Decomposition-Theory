@@ -174,12 +174,8 @@ def main() -> None:
     with tab_compare:
         st.subheader("Compare two cars from the dataset")
 
-        idx1 = st.number_input(
-            "Index of first car", min_value=0, max_value=len(df) - 1, value=0
-        )
-        idx2 = st.number_input(
-            "Index of second car", min_value=0, max_value=len(df) - 1, value=1
-        )
+        idx1 = st.number_input("Index of first car", min_value=0, max_value=len(df) - 1, value=0)
+        idx2 = st.number_input("Index of second car", min_value=0, max_value=len(df) - 1, value=1)
 
         if st.button("Compare"):
             row1 = df.iloc[int(idx1)]
