@@ -1,587 +1,497 @@
-# **Car-Value-Decoding-Engine**
-                          
-<p align="center">
+<div align="center">
 
-  <img src="https://img.shields.io/badge/Project-Car--Value--Decoding--Engine-blueviolet?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Domain-Auto%20Pricing%20Intelligence-4CAF50?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Focus-Explainable%20Machine%20Learning-FFC107?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Python-3.10-yellow?style=for-the-badge&logo=python" />
-  <img src="https://img.shields.io/badge/Streamlit-UI%20Dashboard-FF4B4B?style=for-the-badge&logo=streamlit" />
-  <img src="https://img.shields.io/badge/Model-RandomForestRegressor-006400?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Explainability-Value%20Decomposition-9C27B0?style=for-the-badge" />
+# Car-Value-Decoding-Engine
 
-</p>
-         
-### *A Transparent Machine Learning System for Understanding Car Prices Like a Human Appraiser*
-     
----
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-RandomForestRegressor-orange)
+![Explainability](https://img.shields.io/badge/Explainability-Value%20Decomposition-9C27B0)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
+![Status](https://img.shields.io/badge/Status-Educational%20ML%20Project-purple)
+[![CI](https://github.com/AmirhosseinHonardoust/Car-Value-Decomposition-Theory/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AmirhosseinHonardoust/Car-Value-Decomposition-Theory/actions/workflows/ci.yml)
 
-# Table of Contents
+</div>
 
-To help navigation, this README includes:
+A machine learning project that predicts car prices with a **Random Forest Regressor** and then *explains* each prediction by decomposing it into per-group contributions (brand, age, mileage, fuel type, transmission, condition, base spec), with **command-line inference**, a **Streamlit dashboard**, permutation importance, a group-level bias check, and an automated test suite.
 
-1. **Introduction**
-2. **Why Explainable Pricing Matters**
-3. **Dataset Source + Owner Explanation**
-4. **Project Philosophy & Design Goals**
-5. **High-Level Summary of the System**
-6. **Architecture**
-7. **Data Pipeline**
-8. **Feature Engineering**
-9. **Model Training**
-10. **Value Decomposition Theory**
-11. **Mathematical Formulation**
-12. **Example: Decomposed Pricing Story**
-13. **Command-Line Interface (CLI Guide)**
-14. **Streamlit App Walkthrough (With Screenshots)**
-15. **Explainability Tools**
-16. **Dataset Insights**
-17. **Future Enhancements**
-18. **Real Business Use Cases**
+> **Important:** This project is an **educational explainability demo**, not a real-world valuation or appraisal tool.
+>
+> The bundled dataset's `Price` column shows essentially no measurable correlation with any of its own numeric features (verified below). The model's job here is to demonstrate an honest, auditable decomposition *method* — not to produce prices anyone should act on. See [Limitations](#limitations) before drawing any conclusions from its output.
+
+> **Naming note:** the app and this README use the display name "Car-Value-Decoding-Engine"; the GitHub repository itself is named `Car-Value-Decomposition-Theory`.
 
 ---
 
-# **1. Introduction**
+## Table of Contents
 
-Most machine learning projects stop at prediction.
-This one does not.
-
-**Car-Value-Decoding-Engine** goes beyond predicting car prices, it *explains* them.
-
-It behaves like a **professional human appraiser**, breaking a car’s predicted price into meaningful and interpretable components:
-
-* How much the **brand** adds
-* How much **age** subtracts
-* How **mileage** influences resale value
-* How **engine size** affects base value
-* How **condition** affects desirability
-* How **fuel type** shifts market expectation
-* How **transmission** affects demand
-
-Instead of offering a mysterious ML-generated price, it offers:
-
-> “This price makes sense because each part contributes fairly and logically.”
-
-This is what **true explainable machine learning** looks like.
-
----
-
-# **2. Why Explainable Pricing Matters**
-
-Car pricing is not random, it is a function of measurable and emotional components.
-But real-world ML pricing models often behave like opaque black boxes, making them:
-
-* hard to trust
-* hard to understand
-* hard to debug
-* hard to justify
-
-This project solves that by making predictions **transparent, interpretable, and auditable**.
-
-For businesses, explainability helps:
-
-* build consumer trust
-* improve regulatory acceptance
-* assist negotiation
-* support fairness & compliance
-* enable strategic decisions
-
-For developers, explainability helps:
-
-* verify model logic
-* detect data bias
-* validate assumptions
-* discover feature interactions
-* avoid model hallucinations
+- [Project Overview](#project-overview)
+- [What This Project Does](#what-this-project-does)
+- [What This Project Does Not Do](#what-this-project-does-not-do)
+- [Key Features](#key-features)
+- [System Workflow](#system-workflow)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Training and Evaluation](#training-and-evaluation)
+- [Value Decomposition Method and Known Limitation](#value-decomposition-method-and-known-limitation)
+- [Example Decomposition Output](#example-decomposition-output)
+- [Streamlit Dashboard](#streamlit-dashboard)
+- [Evaluation Metrics](#evaluation-metrics)
+- [Visual Reports](#visual-reports)
+- [Testing and CI](#testing-and-ci)
+- [Code Quality](#code-quality)
+- [Limitations](#limitations)
+- [Responsible Use](#responsible-use)
+- [Future Improvements](#future-improvements)
+- [Tech Stack](#tech-stack)
+- [Author](#author)
+- [License](#license)
 
 ---
 
-# **3. Dataset Source**
+## Project Overview
 
-The dataset comes from **Abdullah Meo (Kaggle)**:
+Most price-prediction demos stop at a single number. This project instead treats explainability as the deliverable: every prediction is broken down into how much each feature group added or subtracted relative to a baseline "average" car, in a way that always reconstructs exactly back to the final prediction.
 
-[https://www.kaggle.com/datasets/abdullahmeo/car-price-pridiction](https://www.kaggle.com/datasets/abdullahmeo/car-price-pridiction)
-
-### Why this dataset is valuable:
-
-* It contains **realistic automotive attributes**
-* It reflects genuine **market patterns**
-* It includes both **numeric and categorical data**
-* It features **non-linear interactions** (perfect for Random Forests)
-* It enables creation of **interpretable pricing logic**
-
-Every attribute connects directly to a real-world pricing factor:
-
-| Dataset Column | Real-World Meaning        |
-| -------------- | ------------------------- |
-| Brand          | Reputation, luxury factor |
-| Model          | Design variant, trims     |
-| Engine Size    | Performance & spec level  |
-| Mileage        | Wear and tear             |
-| Year           | Depreciation factor       |
-| Condition      | Market-readiness          |
-| Transmission   | Market demand             |
-| Fuel Type      | Running cost perception   |
-
-This allows a rich, insightful ML system.
+The system covers the full loop: data cleaning and feature engineering, model training, a sequential group-swap decomposition method, permutation-importance and group-bias diagnostics, a CLI, a Streamlit dashboard, and an automated test suite that pins down both the intended behavior *and* a known limitation of the decomposition method (see below).
 
 ---
 
-# **4. Project Philosophy & Design Principles**
+## What This Project Does
 
-This project follows five guiding principles:
+This project can:
 
-### **Transparency over accuracy**
-
-A pricing model must explain itself, not just output numbers.
-
-### **Components reflect human reasoning**
-
-Instead of predicting blindly, the model simulates:
-
-* brand uplift
-* mileage penalty
-* aging depreciation
-* spec-based value
-
-### **Modularity**
-
-Every part of the system, data, model, decomposition and UI is separated.
-
-### **Real-world usability**
-
-Designed to be used by:
-
-* dealerships
-* pricing analysts
-* buyers/sellers
-* researchers
-
-### **Production-readiness**
-
-Architecture mirrors real ML systems used in industry.
+- Clean and engineer features from a raw car-listing CSV (car age, mileage-per-year, brand extraction)
+- Train a `RandomForestRegressor` price model and report MAE, RMSE, and R²
+- Decompose any single prediction into per-group contributions (brand, age, mileage, fuel, transmission, seller/condition, base spec) that sum exactly to the final prediction
+- Compare two cars' specs and decompositions side by side
+- Compute global permutation feature importance
+- Compare average predicted vs. actual price across a categorical group (a basic bias/fairness check)
+- Provide a four-command CLI (`prepare-data`, `train`, `evaluate`, `decode-car`)
+- Provide a three-tab Streamlit dashboard (single-car decoder, car comparison, market explorer)
+- Run an isolated, fixture-based pytest suite in CI (ruff, black, mypy, pytest)
 
 ---
 
-# **5. High-Level System Summary**
+## What This Project Does Not Do
 
-The system has four major components:
+This project does **not**:
 
-### **Data Pipeline**
-
-Cleans raw input, engineers features, handles missingness, creates baseline rows.
-
-### **Model Pipeline**
-
-Trains a Random Forest with encoded categorical variables.
-
-### **Value Decomposition Engine**
-
-Simulates feature-group replacement to compute contributions.
-
-### **Interactive Dashboard**
-
-Lets users experiment with values and view explanations.
+- Produce prices suitable for real buying, selling, or appraisal decisions
+- Guarantee that per-group contributions are stable — they depend on a fixed swap order, not a Shapley-style average over orderings (see below)
+- Perform any real-world market validation; it is trained and evaluated only on one bundled Kaggle CSV
+- Audit for fairness beyond a single group-vs-group average-error comparison
+- Retrain, monitor, or serve the model in production
 
 ---
 
-# **6. Architecture**
+## Key Features
 
-```
-┌────────────────────┐
-│  Raw Kaggle Data   │
-└───────┬────────────┘
-        │ data_prep.py
-        ▼
-┌────────────────────┐
-│ Cleaned Dataset     │
-│ + Engineered Fields │
-└───────┬────────────┘
-        │ features.py
-        ▼
-┌────────────────────┐
-│ Preprocessing      │
-│ (Scaling + OHE)    │
-└───────┬────────────┘
-        │ train_model.py
-        ▼
-┌────────────────────┐
-│ Trained Model      │
-│ + Baseline Stats   │
-└───────┬────────────┘
-        │ value_decomposition.py
-        ▼
-┌────────────────────┐
-│ Decomposition      │
-│ Explanation Engine │
-└───────┬────────────┘
-        │ app/app.py
-        ▼
-┌────────────────────┐
-│ Streamlit App      │
-│ (Decoder + Tools)  │
-└────────────────────┘
+- **Random Forest price model** (`RandomForestRegressor`, 300 trees) trained via a `ColumnTransformer` + `Pipeline` (scaling for numerics, one-hot encoding for categoricals)
+- **Sequential group-swap decomposition** (`value_decomposition.py`) — swaps each feature group from a baseline row into the sample row one group at a time and measures the prediction delta, so contributions always sum exactly to the final prediction
+- **Documented order-dependence** — a dedicated test (`tests/test_value_decomposition.py`) proves contributions change if the group order changes, so this known limitation can't silently regress
+- **Permutation importance** (`explainability.py`) for global feature ranking
+- **Group-level bias check** (`fairness_checks.py`) comparing average predicted vs. actual price per category
+- **CLI** with four subcommands and clear error handling (missing file, missing model, out-of-range index)
+- **Streamlit dashboard** with three tabs: single-car decoder, two-car comparison, market explorer
+- **Isolated pytest fixtures** (`tests/conftest.py`) that redirect every filesystem path to a throwaway temp directory, so tests never touch real project data
+- **Ruff, Black, and mypy** configured in `pyproject.toml`, enforced in CI
+- **GitHub Actions CI** running lint, format-check, type-check, and the full test suite
+
+---
+
+## System Workflow
+
+```text
+Raw CSV (data/raw/car_price_prediction.csv)
+        ↓
+Cleaning + feature engineering (data_prep.py)
+        ↓
+Preprocessing: scaling + one-hot encoding (features.py)
+        ↓
+RandomForestRegressor training (train_model.py)
+        ↓
+Saved model + baseline feature stats (models/)
+        ↓
+Sequential group-swap decomposition (value_decomposition.py)
+        ↓
+Per-group contributions + reconstruction check
+        ↓
+CLI (src/cli.py) and Streamlit dashboard (app/app.py)
 ```
 
-Each piece is independently testable and replaceable.
-
 ---
 
-# **7. Data Pipeline**
+## Project Structure
 
-The pipeline handles messy real-world data gracefully.
-
-### Steps:
-
-### **1. Load raw CSV**
-
-from `data/raw/car_price_prediction.csv`.
-
-### **2. Clean string columns**
-
-Trims whitespace, normalizes values.
-
-### **3. Convert numeric fields**
-
-Ensures Year, Mileage, Engine Size, and Price are valid numbers.
-
-### **4. Remove impossible values**
-
-(negative mileage, zero-age cars, etc.)
-
-### **5. Compute engineered features:**
-
-#### `car_age = reference_year - year`
-
-Human-friendly depreciation measure.
-
-#### `km_per_year = mileage / car_age`
-
-Normalizes mileage intensity.
-
-### **6. Handle missing categoricals**
-
-Replaces missing values with `"Unknown"` to avoid model crashes.
-
----
-
-# **8. Feature Engineering**
-
-### **Numeric Features:**
-
-* Car age
-* Engine size
-* Mileage
-* Mileage intensity (km per year)
-
-Why numeric scaling matters:
-Random Forests don’t require scaling, but scaling helps decomposition consistency.
-
-### **Categorical Features:**
-
-* Brand
-* Fuel type
-* Transmission
-* Condition
-
-OneHotEncoder ensures that each category becomes its own dimension.
-
----
-
-# **9. Model Training**
-
-### Why RandomForestRegressor?
-
-Because it offers:
-
-* **robustness**
-* **nonlinearity**
-* **feature interaction learning**
-* **stability under perturbations** (important for decomposition)
-* **simplicity of deployment**
-
-The model pipeline:
-
-1. Preprocess numerics & categoricals
-2. Fit Random Forest
-3. Save model and training stats
-4. Store baseline feature row for decomposition
-5. Save metrics (MAE, RMSE, R²)
-
----
-
-# **10. Value Decomposition Theory**
-
-This module (`value_decomposition.py`) is the **heart** of the project.
-
-It solves the hardest ML problem:
-
-> "Given a prediction, how do we determine how much each factor contributed?"
-
-### Why not SHAP?
-
-SHAP is powerful, but:
-
-* difficult to explain to non-experts
-* computationally expensive
-* unstable across model changes
-* not grouped by human-friendly categories
-
-Our method is:
-
-* deterministic
-* stable
-* grouped by meaningful components
-* mathematically sound
-* domain-aligned
-
----
-
-# **11. Mathematical Formulation**
-
-Let:
-
-* **X_base** = baseline feature vector
-* **X_groupi** = baseline with group i replaced
-* **f()** = trained model
-* **price_base** = f(X_base)
-* **price_groupi** = f(X_groupi)
-
-Contribution of group *i*:
-
-```
-C_i = price_groupi, previous_price
+```text
+Car-Value-Decomposition-Theory/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── app/
+│   └── app.py
+│
+├── data/
+│   └── raw/
+│       └── car_price_prediction.csv
+│
+├── src/
+│   ├── __init__.py
+│   ├── cli.py
+│   ├── config.py
+│   ├── data_prep.py
+│   ├── evaluate_model.py
+│   ├── explainability.py
+│   ├── fairness_checks.py
+│   ├── features.py
+│   ├── train_model.py
+│   └── value_decomposition.py
+│
+├── tests/
+│   ├── conftest.py
+│   ├── test_cli.py
+│   ├── test_data_prep.py
+│   ├── test_evaluate_model.py
+│   ├── test_features.py
+│   ├── test_train_model.py
+│   └── test_value_decomposition.py
+│
+├── README.md
+├── LICENSE
+├── pyproject.toml
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
-Final predicted price:
-
-```
-P = price_base + Σ C_i
-```
-
-This ensures explainability is:
-
-* **additive**
-* **human-readable**
-* **consistent**
+`data/processed/`, `models/`, and `reports/metrics/` are generated locally by the CLI and excluded via `.gitignore`.
 
 ---
 
-# **12. Story Example of Decomposed Pricing**
+## Installation
 
-Imagine a car predicted at $44,210.
+### 1. Clone the Repository
 
-The model might say:
+```bash
+git clone https://github.com/AmirhosseinHonardoust/Car-Value-Decomposition-Theory.git
+cd Car-Value-Decomposition-Theory
+```
 
-* **+472** because it's Audi (brand premium)
-* **–914** because it's older
-* **+13,378** because of high-distribution mileage pattern
-* **–15,497** because automatic transmission is penalized in this dataset
-* **+255** because of good condition
-* **+1657** from engine size
+### 2. Create a Virtual Environment
 
-This creates a **transparent story**, not just a number.
+On Windows CMD:
+
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+On macOS/Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+For development tools (pytest, ruff, black, mypy):
+
+```bash
+pip install -r requirements-dev.txt
+```
 
 ---
 
-# **13. CLI Guide, What Each Command Does**
+## Quick Start
 
-### Prepare Data
+Clean and cache the dataset:
 
 ```bash
 python -m src.cli prepare-data
 ```
 
-Cleans and caches the dataset.
-
-### Train Model
+Train the model:
 
 ```bash
 python -m src.cli train
 ```
 
-Trains the ML engine.
-
-### Evaluate Model
+Evaluate the trained model:
 
 ```bash
 python -m src.cli evaluate
 ```
 
-Computes metrics and saves them.
-
-### Decode Car
+Decode a single car's price into value components:
 
 ```bash
-python -m src.cli decode-car --index n
+python -m src.cli decode-car --index 0
 ```
 
-Prints a detailed decomposition story.
+Launch the dashboard:
+
+```bash
+streamlit run app/app.py
+```
 
 ---
 
-# **14. Streamlit App, Full Walkthrough**
+## Training and Evaluation
+
+`train` loads the cleaned dataset, splits it (80/20, `random_state=42`), fits the preprocessing + Random Forest pipeline, and writes:
+
+```text
+models/price_model.joblib
+models/baseline_stats.json
+reports/metrics/regression_metrics.json
+```
+
+`baseline_stats.json` stores the mean of each numeric feature and the mode of each categorical feature across the training split — this baseline row is what every decomposition starts from. `evaluate` reloads the saved model and re-scores it on a freshly drawn test split, writing `reports/metrics/regression_metrics_eval.json`.
 
 ---
 
-## Single Car Decoder
+## Value Decomposition Method and Known Limitation
 
-<img width="1262" height="472" alt="Screenshot 2025-12-09 at 16-54-15 Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
+`value_decomposition.py` explains a prediction by starting from the baseline row and swapping in one feature group at a time (brand, then age, then mileage, and so on), measuring how much the prediction moves at each step. By construction, `base_value + sum(contributions) == final_prediction` exactly — this project's own tests verify a reconstruction error of `0.0`.
 
-### What this tool does:
+This is **not** the same guarantee Shapley values give. Shapley values average the contribution of each group over *every possible ordering*; this method uses one fixed ordering (whatever order the groups happen to be stored in inside `baseline_stats.json`). That means:
 
-* Lets you simulate any car configuration
-* Predicts the price
-* Shows value breakdown
-* Visualizes contributions
-* Outputs explainable JSON
+- The reconstruction identity always holds — it's a property of the arithmetic, not evidence the attribution is "correct"
+- Per-group numbers can change if the group order changes, for the same car and the same model
 
-Great for:
-
-* buyers
-* sellers
-* ML explainability demos
-* pricing analysts
+`tests/test_value_decomposition.py::test_contributions_are_order_dependent_known_limitation` proves this by reversing the group order and confirming at least one contribution changes. This test exists specifically so the limitation can't silently disappear or get "fixed" without anyone noticing. A cheap approximation of true Shapley values — averaging over several random group orderings — is tracked as a future improvement rather than implemented here.
 
 ---
 
-## Raw Decomposition
+## Example Decomposition Output
 
-<img width="409" height="296" alt="Screenshot 2025-12-09 at 16-54-41 Car Value Decoding Engine" src="https://github.com/user-attachments/assets/b693d382-e3e7-42ef-849d-fd5530741415" />
+Run against the bundled dataset (row 0, a 2016 Tesla, Petrol, Manual, "New" condition), verified in this environment:
 
-Outputs full machine-readable breakdown.
+```json
+{
+  "base_value": 43029.64,
+  "final_prediction": 35690.13,
+  "reconstruction_error": 0.0,
+  "contrib_base_spec": 10636.23,
+  "contrib_brand": 1371.73,
+  "contrib_age": -851.42,
+  "contrib_mileage": -10765.85,
+  "contrib_fuel": -3881.96,
+  "contrib_transmission": 0.0,
+  "contrib_seller": -3848.24
+}
+```
 
----
-
-## Decomposition Chart
-
-<img width="1262" height="387" alt="Screenshot 2025-12-09 at 16-54-30 Car Value Decoding Engine" src="https://github.com/user-attachments/assets/56a7fb41-81fe-4db9-adce-dc8779abc8bd" />
-
-Color-coded interpretation of increases and penalties.
-
----
-
-## Compare Two Cars
-
-<img width="657" height="325" alt="Screenshot 2025-12-09 at 16-56-05 Car Value Decoding Engine" src="https://github.com/user-attachments/assets/116c45e4-3ce2-486a-acf6-5d9324573fa3" />
-
-Lets you compare:
-
-* Specs
-* Final predictions
-* Contribution profiles
+`base_value + sum(contrib_*) == final_prediction` exactly (43029.64 + 1371.73 − 851.42 − 10765.85 − 3881.96 + 0.0 − 3848.24 + 10636.23 = 35690.13). Given the near-zero correlation between `Price` and the underlying features on this dataset (see [Limitations](#limitations)), treat these specific numbers as a demonstration of the *mechanism*, not a real pricing signal.
 
 ---
 
-## Market Explorer
+## Streamlit Dashboard
 
-<img width="1099" height="447" alt="Screenshot 2025-12-09 at 16-55-49 Car Value Decoding Engine" src="https://github.com/user-attachments/assets/0456f0d2-ecd3-476e-90e0-1b15a0e23e8b" />
+Launch the app:
 
-Visual dataset understanding.
+```bash
+streamlit run app/app.py
+```
 
----
+The dashboard has three tabs:
 
-# **15. Explainability Tools**
+- **Single Car Decoder** — configure a car's specs and see its predicted price broken into contributions, as a bar chart and raw JSON
+- **Compare Two Cars** — pick two rows from the dataset and view their specs and decompositions side by side
+- **Market Explorer** — a scatter plot of price vs. car age over a sample of the dataset
 
-## Permutation Importance
-
-Shows global influence of features.
-
-## Bias Detection
-
-Shows if the model systematically favors or penalizes:
-
-* transmissions
-* fuel types
-* conditions
-* brands
-
-This ensures fairness in pricing systems.
+<div align="center">
+<img width="1262" height="472" alt="Single Car Decoder" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
+</div>
 
 ---
 
-# **16. Dataset Insights**
+## Evaluation Metrics
 
-dataset exhibits interesting behaviors:
+<div align="center">
 
-### Mileage sometimes increases price
+| Metric | Why it matters |
+|---|---|
+| MAE | Average absolute prediction error, in the same units as price |
+| RMSE | Penalizes large errors more heavily than MAE |
+| R² | Fraction of price variance explained by the model; 0 = no better than predicting the mean, negative = worse |
 
-Why?
+</div>
 
-* Some high-mileage cars belong to luxury brands
-* Mileage clusters may correlate with engine size
-* Market bias encoded in source data
+Verified results on the full bundled dataset (2,500 rows, 80/20 split, `random_state=42`):
 
-### Automatic transmission decreases price
+<div align="center">
 
-Possible reasons:
+| Metric | Value |
+|---|---:|
+| MAE | 24,227.46 |
+| RMSE | 28,407.25 |
+| R² | −0.065 |
 
-* Region prefers manual cars
-* Dataset bias
-* Engine-transmission pairs not uniformly distributed
+</div>
 
-Understanding these patterns is vital when applying ML to economics.
-
----
-
-# **17. Future Enhancements**
-
-### Add SHAP to complement deterministic decomposition
-
-### Build full negotiation simulator
-
-### Deploy model via FastAPI
-
-### Add “depreciation forecast curve”
-
-### Add “overpriced/underpriced car detector”
-
-### Use LLM to generate natural-language valuation reports
-
-### Integrate image-based classification for brand detection
-
-### Add full AutoML pipeline
-
-### Build model confidence interval estimator
+> **A negative R² means this model performs worse than simply predicting the mean price for every car.** Checking the underlying data explains why: the correlation between `Price` and every numeric feature (Engine Size, Mileage, car age, km-per-year) is below 0.06 in magnitude across the board. On this particular bundled CSV, price appears to carry no real signal tied to the other columns. This is the most important caveat in this README — read the decomposition output as a demonstration of the *method*, not as evidence the model has learned anything predictive about car pricing.
 
 ---
 
-# **18. Real Business Use Cases**
+## Visual Reports
 
-### Car dealerships
+<div align="center">
 
-Price appraisal accuracy + explainability builds trust.
+| Raw Decomposition | Decomposition Chart |
+|---|---|
+| <img width="409" alt="Raw decomposition JSON" src="https://github.com/user-attachments/assets/b693d382-e3e7-42ef-849d-fd5530741415" /> | <img width="1262" alt="Decomposition bar chart" src="https://github.com/user-attachments/assets/56a7fb41-81fe-4db9-adce-dc8779abc8bd" /> |
+| **What it shows:** the machine-readable decomposition — base value, per-group contributions, final prediction, and reconstruction error. | **What it shows:** the same contributions as a bar chart, making positive and negative pushes on price easy to scan at a glance. |
 
-### Marketplaces
+</div>
 
-Show transparent pricing breakdown to buyers.
+<details>
+<summary>Compare Two Cars and Market Explorer tabs</summary>
 
-### Inspectors
+<div align="center">
 
-Use decomposition to justify assessments.
+| Compare Two Cars | Market Explorer |
+|---|---|
+| <img width="657" alt="Compare two cars" src="https://github.com/user-attachments/assets/116c45e4-3ce2-486a-acf6-5d9324573fa3" /> | <img width="1099" alt="Market explorer scatter plot" src="https://github.com/user-attachments/assets/0456f0d2-ecd3-476e-90e0-1b15a0e23e8b" /> |
 
-### Researchers
+Compare Two Cars places two rows' specs and decompositions side by side. Market Explorer plots price against car age over a sample of the dataset.
 
-Study economic patterns in vehicle markets.
+</div>
 
-### Pricing analysts
-
-Validate pricing strategies using feature importances.
+</details>
 
 ---
 
-# How This System Generalizes to Other Domains**
+## Testing and CI
 
-This decomposition framework can also be used for:
+Run unit tests locally:
 
-* home pricing engines
-* insurance risk scoring
-* credit scoring
-* e-commerce price optimization
-* medical diagnosis attribution
-* HR salary intelligence
+```bash
+pytest
+```
 
-Anywhere you need:
+Lint, format-check, and type-check:
 
-* prediction + explanation
-* transparency + trust
+```bash
+ruff check .
+black --check .
+mypy .
+```
+
+The GitHub Actions workflow runs, in order:
+
+- dependency installation
+- `ruff check .`
+- `black --check .`
+- `mypy .`
+- `pytest -q`
+
+CI is defined in:
+
+```text
+.github/workflows/ci.yml
+```
+
+---
+
+## Code Quality
+
+<div align="center">
+
+| Module | Purpose |
+|---|---|
+| `src/config.py` | Central column mapping, feature/group definitions, and path constants |
+| `src/data_prep.py` | Loads and cleans the raw CSV; engineers `car_age` and `km_per_year`; caches to parquet |
+| `src/features.py` | Builds the feature matrix and the scaling/one-hot preprocessing pipeline |
+| `src/train_model.py` | Trains the Random Forest, saves the model, baseline stats, and metrics |
+| `src/evaluate_model.py` | Reloads the saved model and re-scores it on a fresh split |
+| `src/value_decomposition.py` | Sequential group-swap decomposition of a prediction |
+| `src/explainability.py` | Global permutation feature importance |
+| `src/fairness_checks.py` | Average predicted-vs-actual price by category |
+| `src/cli.py` | Argparse CLI wiring the four subcommands together |
+| `app/app.py` | Streamlit dashboard |
+
+</div>
+
+Tooling is configured through `pyproject.toml` (ruff, black, mypy, pytest) and `requirements-dev.txt`.
+
+---
+
+## Limitations
+
+This project has important limitations:
+
+- **The bundled dataset shows no meaningful correlation between `Price` and any of its own features** (all |r| < 0.06), which drives the model's negative R² — treat all example output as a demonstration of the method, not a real valuation
+- The decomposition method is order-dependent, not a true Shapley-value average — documented and tested, but still a real limitation of the current implementation
+- `reference_year` for computing car age is a hardcoded constant, not derived from the current date
+- The bias check compares only average predicted vs. actual price per single category; it isn't a full fairness audit
+- Trained and evaluated on one bundled Kaggle CSV only — no external or out-of-sample validation
+- The Streamlit app has no automated test coverage of its own beyond the pure logic it shares with `src/`
+
+---
+
+## Responsible Use
+
+This repository is intended for:
+
+- machine learning education and portfolio demonstration
+- practicing explainable-ML workflow design (baseline construction, contribution decomposition, reconstruction checks)
+- exploring the difference between an additive decomposition method and true Shapley values
+- CLI and Streamlit app-building practice
+
+It should not be used as-is for:
+
+- real car pricing, appraisal, or negotiation decisions
+- any production pricing, insurance, or credit system
+- fairness or compliance claims about a real deployed model
+
+A real deployment would need a dataset with genuine price signal, external validation, a properly averaged (Shapley or similar) attribution method, and human review.
+
+---
+
+## Future Improvements
+
+- Average decomposition contributions over multiple group orderings (a cheap Shapley approximation)
+- Validate against a dataset with real, verifiable price signal
+- Expand the bias check into a fuller fairness audit across multiple groups at once
+- Derive `reference_year` from the current date instead of a hardcoded constant
+- Add test coverage for `explainability.py` and `fairness_checks.py`
+- Add a lightweight smoke test for the Streamlit app
+- Explore gradient-boosted alternatives to the Random Forest baseline
+
+---
+
+## Tech Stack
+
+- Python
+- pandas
+- NumPy
+- scikit-learn
+- joblib
+- pyarrow
+- Streamlit
+- pytest
+- ruff
+- black
+- mypy
+- GitHub Actions
+
+---
+
+## Author
+
+**Amir Honardoust**
+
+GitHub: [@AmirhosseinHonardoust](https://github.com/AmirhosseinHonardoust)
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for the full text.
