@@ -126,8 +126,7 @@ def main() -> None:
 
         if st.button("Decode Car Value"):
             # Compute engineered features consistent with data_prep
-            reference_year = 2020
-            car_age = reference_year - year
+            car_age = config.REFERENCE_YEAR - year
             if car_age <= 0:
                 car_age = 1
             km_per_year = kms / car_age if car_age > 0 else kms

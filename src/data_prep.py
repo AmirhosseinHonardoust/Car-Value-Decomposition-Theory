@@ -52,8 +52,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = df[col].fillna("Unknown")
 
     # Compute car age using a reference year
-    reference_year = 2020
-    df[config.COL_CAR_AGE] = reference_year - df[config.COL_YEAR]
+    df[config.COL_CAR_AGE] = config.REFERENCE_YEAR - df[config.COL_YEAR]
     df.loc[df[config.COL_CAR_AGE] <= 0, config.COL_CAR_AGE] = 1
 
     # Compute km_per_year

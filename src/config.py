@@ -12,6 +12,11 @@ REPORTS_FIGURES_DIR = REPORTS_DIR / "figures"
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 
+# Reference year used to compute car_age (current_year - Year). Kept as a
+# single named constant because it's used identically in both src/data_prep.py
+# and app/app.py -- previously duplicated as a bare literal in both places.
+REFERENCE_YEAR = 2020
+
 # === COLUMN MAPPING FOR YOUR DATASET ===
 # Your CSV has:
 # ['Car ID', 'Brand', 'Year', 'Engine Size', 'Fuel Type',
