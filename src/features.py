@@ -35,9 +35,7 @@ def get_feature_matrix(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
 
 def get_preprocessor() -> ColumnTransformer:
     """Build a ColumnTransformer to preprocess numeric and categorical features."""
-    numeric_transformer = Pipeline(
-        steps=[("scaler", StandardScaler())]
-    )
+    numeric_transformer = Pipeline(steps=[("scaler", StandardScaler())])
 
     categorical_transformer = Pipeline(
         steps=[
@@ -47,15 +45,15 @@ def get_preprocessor() -> ColumnTransformer:
                     handle_unknown="ignore",
                     sparse_output=False,
                 ),
-            )
-        ]
+            ),
+        ],
     )
 
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, config.NUMERIC_FEATURES),
             ("cat", categorical_transformer, config.CATEGORICAL_FEATURES),
-        ]
+        ],
     )
 
     return preprocessor

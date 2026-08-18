@@ -23,9 +23,7 @@ def load_model_and_baseline():
     return model, baseline_features, groups
 
 
-def build_feature_row_from_baseline(
-    baseline_features: dict[str, object]
-) -> pd.DataFrame:
+def build_feature_row_from_baseline(baseline_features: dict[str, object]) -> pd.DataFrame:
     """Create a one-row DataFrame from baseline feature values."""
     data = {col: baseline_features.get(col) for col in config.FEATURE_COLUMNS}
     return pd.DataFrame([data])
