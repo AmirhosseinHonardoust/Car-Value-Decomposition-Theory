@@ -58,7 +58,7 @@ def train_price_model() -> None:
         steps=[
             ("preprocessor", preprocessor),
             ("model", reg),
-        ]
+        ],
     )
 
     model.fit(X_train, y_train)
@@ -67,7 +67,7 @@ def train_price_model() -> None:
 
     mae = float(mean_absolute_error(y_test, y_pred))
     mse = float(mean_squared_error(y_test, y_pred))
-    rmse = float(mse ** 0.5)
+    rmse = float(mse**0.5)
     r2 = float(r2_score(y_test, y_pred))
 
     metrics = {

@@ -55,9 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Car-Value-Decoding-Engine CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    p_prepare = subparsers.add_parser(
-        "prepare-data", help="Clean and cache the dataset."
-    )
+    p_prepare = subparsers.add_parser("prepare-data", help="Clean and cache the dataset.")
     p_prepare.set_defaults(func=cmd_prepare_data)
 
     p_train = subparsers.add_parser("train", help="Train the price model.")

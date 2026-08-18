@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List
 
 import joblib
-import numpy as np
 import pandas as pd
 
 from . import config
@@ -20,21 +18,19 @@ def load_model_and_baseline():
     with config.BASELINE_STATS_PATH.open("r", encoding="utf-8") as f:
         baseline_stats = json.load(f)
 
-    baseline_features: Dict[str, object] = baseline_stats["baseline_features"]
-    groups: Dict[str, List[str]] = baseline_stats["groups"]
+    baseline_features: dict[str, object] = baseline_stats["baseline_features"]
+    groups: dict[str, list[str]] = baseline_stats["groups"]
     return model, baseline_features, groups
 
 
-def build_feature_row_from_baseline(
-    baseline_features: Dict[str, object]
-) -> pd.DataFrame:
+def build_feature_row_from_baseline(baseline_features: dict[str, object]) -> pd.DataFrame:
     """Create a one-row DataFrame from baseline feature values."""
     data = {col: baseline_features.get(col) for col in config.FEATURE_COLUMNS}
     return pd.DataFrame([data])
 
 
 def build_feature_row_from_sample(
-    sample: pd.Series, baseline_features: Dict[str, object]
+    sample: pd.Series, baseline_features: dict[str, object]
 ) -> pd.DataFrame:
     """Create a one-row DataFrame from a sample row.
 
@@ -52,8 +48,7 @@ def build_feature_row_from_sample(
     return pd.DataFrame([data])
 
 
-
-def decompose_value_for_row(row: pd.Series) -> Dict[str, float]:
+def decompose_value_for_row(row: pd.Series) -> dict[str, float]:
     """Decompose the predicted price for a given car into value components.
 
     The algorithm:
@@ -75,7 +70,7 @@ def decompose_value_for_row(row: pd.Series) -> Dict[str, float]:
     base_value = float(model.predict(baseline_df)[0])
 
     current_df = baseline_df.copy()
-    contributions: Dict[str, float] = {}
+    contributions: dict[str, float] = {}
     current_pred = base_value
 
     for group_name, cols in groups.items():
