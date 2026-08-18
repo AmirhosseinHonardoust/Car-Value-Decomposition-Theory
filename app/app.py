@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 import streamlit as st
-import joblib
 
 # --------------------------------------------------------------------
 # Make src importable
@@ -14,8 +14,8 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
 from src import config, data_prep, features
-from src.value_decomposition import decompose_value_for_row
 from src.train_model import train_price_model
+from src.value_decomposition import decompose_value_for_row
 
 
 # --------------------------------------------------------------------
@@ -156,7 +156,7 @@ def main() -> None:
             st.metric("Predicted selling price", f"{dec['final_prediction']:.2f}")
 
             st.markdown("### Value Decomposition")
-            contrib_keys = [k for k in dec.keys() if k.startswith("contrib_")]
+            contrib_keys = [k for k in dec if k.startswith("contrib_")]
             if contrib_keys:
                 contrib_data = {
                     "component": [k.replace("contrib_", "") for k in contrib_keys],
