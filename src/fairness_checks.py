@@ -6,7 +6,7 @@ import pandas as pd
 from . import config, data_prep, features
 
 
-def group_price_bias(group_col: str = "Fuel_Type") -> pd.DataFrame:
+def group_price_bias(group_col: str = config.COL_FUEL_TYPE) -> pd.DataFrame:
     """Compare average predicted vs actual price per group (fuel, seller type, etc.)."""
     df = data_prep.load_clean()
     X, y = features.get_feature_matrix(df)
