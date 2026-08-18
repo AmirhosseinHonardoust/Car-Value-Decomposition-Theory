@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from . import config, data_prep, features
 
 
-def compute_baseline_stats(X) -> dict:
+def compute_baseline_stats(X) -> dict[str, float | str]:
     """Compute baseline feature values for value decomposition.
 
     - Numeric features: mean
@@ -21,7 +21,7 @@ def compute_baseline_stats(X) -> dict:
 
     X_df = pd.DataFrame(X, columns=config.FEATURE_COLUMNS)
 
-    baseline = {}
+    baseline: dict[str, float | str] = {}
     for col in config.NUMERIC_FEATURES:
         baseline[col] = float(X_df[col].mean())
 
