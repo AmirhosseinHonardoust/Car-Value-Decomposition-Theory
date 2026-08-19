@@ -17,8 +17,12 @@ def load_raw() -> pd.DataFrame:
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    # Strip whitespace in object columns
-    for col in df.select_dtypes(include="object").columns:
+    # Strip whitespace in object/string columns. Pandas 4 warns that
+    # include="object" implicitly also matches the new "str" dtype for
+    # backward compatibility; passing both explicitly silences that
+    # warning while keeping identical behavior on pandas <4 (which has
+    # no separate "str" dtype to match).
+    for col in df.select_dtypes(include=["object", "str"]).columns:
         df[col] = df[col].astype(str).str.strip()
 
     # Ensure numeric columns
@@ -47,8 +51,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     existing_required = [c for c in required if c in df.columns]
     df = df.dropna(subset=existing_required)
 
-    # 🔹 NEW: fill missing categoricals so OneHotEncoder never sees NaN
-    for col in df.select_dtypes(include="object").columns:
+    # Fill missing categoricals so OneHotEncoder never sees NaN.
+    for col in df.select_dtypes(include=["object", "str"]).columns:
         df[col] = df[col].fillna("Unknown")
 
     # Compute car age using a reference year

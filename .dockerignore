@@ -1,0 +1,33 @@
+# Generated data & model artifacts (recreated on first run)
+data/processed/
+models/
+reports/metrics/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# VCS / editor / OS
+.git/
+.github/
+.gitignore
+.DS_Store
+
+# Docs not needed at runtime
+README.md
+CONTRIBUTING.md
+LICENSE

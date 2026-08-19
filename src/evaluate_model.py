@@ -4,22 +4,14 @@ import json
 
 import joblib
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
 
-from . import config, data_prep, features
+from . import config
 from .model_quality import describe_r2
+from .split_utils import load_train_test_split
 
 
 def evaluate_model() -> None:
-    df = data_prep.load_clean()
-    X, y = features.get_feature_matrix(df)
-
-    _X_train, X_test, _y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=config.TEST_SIZE,
-        random_state=config.RANDOM_STATE,
-    )
+    _X_train, X_test, _y_train, y_test = load_train_test_split()
 
     if not config.MODEL_PATH.exists():
         raise FileNotFoundError(f"Model not found at {config.MODEL_PATH}")

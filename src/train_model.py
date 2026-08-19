@@ -6,11 +6,11 @@ import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from . import config, data_prep, features
+from . import config, features
 from .model_quality import describe_r2
+from .split_utils import load_train_test_split
 
 
 def compute_baseline_stats(X: pd.DataFrame) -> dict[str, float | str]:
@@ -33,15 +33,7 @@ def compute_baseline_stats(X: pd.DataFrame) -> dict[str, float | str]:
 
 
 def train_price_model() -> None:
-    df = data_prep.load_clean()
-    X, y = features.get_feature_matrix(df)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=config.TEST_SIZE,
-        random_state=config.RANDOM_STATE,
-    )
+    X_train, X_test, y_train, y_test = load_train_test_split()
 
     preprocessor = features.get_preprocessor()
 
@@ -76,7 +68,13 @@ def train_price_model() -> None:
         "r2": r2,
     }
 
-    # Save model
+    # Save model. Known future-break point: on current numpy (2.5.x) this
+    # triggers a `DeprecationWarning` from inside joblib's own pickling code
+    # (`array.shape = self.shape`), not from anything in this project. It's
+    # harmless today; if a future numpy release removes that shape-assignment
+    # fallback, upgrading joblib (or switching MODEL_PATH's format, e.g. to
+    # skops) will be needed. Tracked here rather than silenced so it isn't
+    # lost.
     config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, config.MODEL_PATH)
 

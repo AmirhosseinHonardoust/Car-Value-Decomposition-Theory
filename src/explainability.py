@@ -3,22 +3,14 @@ from __future__ import annotations
 import joblib
 import pandas as pd
 from sklearn.inspection import permutation_importance
-from sklearn.model_selection import train_test_split
 
-from . import config, data_prep, features
+from . import config
+from .split_utils import load_train_test_split
 
 
 def global_permutation_importance(n_repeats: int = 10) -> pd.DataFrame:
     """Compute permutation feature importance on the held-out test set."""
-    df = data_prep.load_clean()
-    X, y = features.get_feature_matrix(df)
-
-    _X_train, X_test, _y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=config.TEST_SIZE,
-        random_state=config.RANDOM_STATE,
-    )
+    _X_train, X_test, _y_train, y_test = load_train_test_split()
 
     if not config.MODEL_PATH.exists():
         raise FileNotFoundError(f"Model not found at {config.MODEL_PATH}")
