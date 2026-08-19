@@ -77,4 +77,3 @@ def multi_group_bias_audit(
 
     df, y, y_pred = _predict_full_dataset()
     return {col: _bias_table(df, col, y, y_pred) for col in cols}
-
