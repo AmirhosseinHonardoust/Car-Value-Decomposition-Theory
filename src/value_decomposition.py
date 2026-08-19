@@ -5,11 +5,12 @@ import random
 
 import joblib
 import pandas as pd
+from sklearn.pipeline import Pipeline
 
 from . import config
 
 
-def load_model_and_baseline():
+def load_model_and_baseline() -> tuple[Pipeline, dict[str, object], dict[str, list[str]]]:
     if not config.MODEL_PATH.exists():
         raise FileNotFoundError(f"Model not found at {config.MODEL_PATH}")
     if not config.BASELINE_STATS_PATH.exists():
@@ -48,7 +49,7 @@ def build_feature_row_from_sample(
 
 
 def _swap_along_order(
-    model,
+    model: Pipeline,
     baseline_df: pd.DataFrame,
     sample_df: pd.DataFrame,
     base_value: float,

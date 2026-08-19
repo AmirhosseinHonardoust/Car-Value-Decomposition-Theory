@@ -1,8 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "car-value-decomposition-theory"
 version = "0.1.0"
 description = "A transparent ML system that decomposes predicted car prices into interpretable value components."
 requires-python = ">=3.12"
+dependencies = [
+    "pandas==3.0.5",
+    "numpy==2.5.2",
+    "scikit-learn==1.9.0",
+    "joblib==1.5.3",
+    "streamlit==1.61.1",
+    "pyarrow==24.0.0",
+]
+
+[project.scripts]
+car-value = "src.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.16.3",
+    "black==26.5.1",
+    "mypy==2.3.1",
+    "pandas-stubs",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
 
 [tool.ruff]
 line-length = 100
@@ -21,6 +48,7 @@ target-version = ["py310"]
 python_version = "3.12"
 ignore_missing_imports = true
 check_untyped_defs = true
+disallow_untyped_defs = true
 warn_unused_ignores = true
 
 [tool.pytest.ini_options]

@@ -13,7 +13,7 @@ from . import config, data_prep, features
 from .model_quality import describe_r2
 
 
-def compute_baseline_stats(X) -> dict[str, float | str]:
+def compute_baseline_stats(X: pd.DataFrame) -> dict[str, float | str]:
     """Compute baseline feature values for value decomposition.
 
     - Numeric features: mean
