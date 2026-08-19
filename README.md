@@ -93,7 +93,7 @@ This project does **not**:
 - **Documented order-dependence** — a dedicated test (`tests/test_value_decomposition.py`) proves contributions change if the group order changes, so this known limitation can't silently regress
 - **Opt-in Shapley approximation** — `decompose_value_for_row(row, n_orderings=N)` averages contributions over `N` random group orderings instead of one fixed order, while still reconstructing exactly to the final prediction
 - **Permutation importance** (`explainability.py`) for global feature ranking
-- **Group-level bias check** (`fairness_checks.py`) comparing average predicted vs. actual price per category
+- **Group-level bias check** (`fairness_checks.py`) comparing average predicted vs. actual price per category, either for one column (`group_price_bias`) or across every modeled categorical feature at once (`multi_group_bias_audit`)
 - **Automatic R² interpretation** (`model_quality.py`) — a shared, tested function that `train`, `evaluate`, `decode-car`, and the Streamlit app all call to print/display an honest, plain-language read of model quality, instead of leaving a bare R² number for the reader to interpret
 - **CLI** with four subcommands and clear error handling (missing file, missing model, out-of-range index)
 - **Streamlit dashboard** with three tabs: single-car decoder, two-car comparison, market explorer
@@ -214,6 +214,22 @@ For development tools (pytest, ruff, black, mypy):
 
 ```bash
 pip install -r requirements-dev.txt
+```
+
+### 4. Optional: Install as a Package
+
+The project is also pip-installable, which gives you a `car-value` command
+instead of `python -m src.cli`:
+
+```bash
+pip install -e .          # runtime dependencies only
+pip install -e ".[dev]"   # plus pytest, ruff, black, mypy
+```
+
+```bash
+car-value prepare-data
+car-value train
+car-value decode-car --index 0 --orderings 25
 ```
 
 ---
@@ -427,7 +443,7 @@ CI is defined in:
 | `src/evaluate_model.py` | Reloads the saved model and re-scores it on a fresh split |
 | `src/value_decomposition.py` | Sequential group-swap decomposition of a prediction |
 | `src/explainability.py` | Global permutation feature importance |
-| `src/fairness_checks.py` | Average predicted-vs-actual price by category |
+| `src/fairness_checks.py` | Average predicted-vs-actual price by category, single-column or across all categorical features at once |
 | `src/model_quality.py` | Turns a raw R² number into an honest, plain-language interpretation, shared by the CLI and the app |
 | `src/cli.py` | Argparse CLI wiring the four subcommands together |
 | `app/app.py` | Streamlit dashboard |
@@ -445,7 +461,7 @@ This project has important limitations:
 - **The bundled dataset shows no meaningful correlation between `Price` and any of its own features** (all |r| < 0.06), which drives the model's negative R² — treat all example output as a demonstration of the method, not a real valuation
 - The decomposition method is order-dependent, not a true Shapley-value average — documented and tested, but still a real limitation of the current implementation
 - `reference_year` for computing car age is a hardcoded constant, not derived from the current date
-- The bias check compares only average predicted vs. actual price per single category; it isn't a full fairness audit
+- The bias check (`group_price_bias` / `multi_group_bias_audit`) compares only average predicted vs. actual price per category, one categorical column at a time — no intersectional analysis, no protected-attribute framing; it isn't a full fairness audit
 - Trained and evaluated on one bundled Kaggle CSV only — no external or out-of-sample validation (see [`data/raw/README.md`](data/raw/README.md) for provenance)
 - The Streamlit app has no automated test coverage of its own beyond the pure logic it shares with `src/`
 
@@ -473,13 +489,16 @@ A real deployment would need a dataset with genuine price signal, external valid
 ## Future Improvements
 
 - Validate against a dataset with real, verifiable price signal
-- Expand the bias check into a fuller fairness audit across multiple groups at once
+- Extend the bias check toward intersectional analysis (multiple columns combined, not just one at a time)
 - Explore gradient-boosted alternatives to the Random Forest baseline
 
 Done since the initial audit: multi-ordering averaging is now exposed via `--orderings`
 on the CLI and a slider in the Streamlit app; `REFERENCE_YEAR` is now overridable via the
 `CAR_VALUE_REFERENCE_YEAR` env var (default unchanged at 2020); a Streamlit-import smoke
-test now covers `app/app.py`.
+test now covers `app/app.py`; the project is now pip-installable with a `car-value` console
+script; the bias check can now audit every categorical feature at once via
+`multi_group_bias_audit`; `mypy`'s `disallow_untyped_defs` is enabled and the whole codebase
+satisfies it.
 
 ---
 

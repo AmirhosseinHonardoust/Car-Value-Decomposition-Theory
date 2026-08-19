@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import streamlit as st
+from sklearn.pipeline import Pipeline
 
 # --------------------------------------------------------------------
 # Make src importable
@@ -30,7 +31,7 @@ def load_data() -> pd.DataFrame:
 
 
 @st.cache_resource
-def load_model():
+def load_model() -> Pipeline:
     """Load the trained model, training once if it doesn't exist."""
     if not config.MODEL_PATH.exists():
         train_price_model()

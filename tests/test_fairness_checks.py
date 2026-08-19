@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from src import config, fairness_checks, train_model
@@ -44,3 +45,32 @@ def test_group_price_bias_groups_cover_all_categories(trained: Path) -> None:
     df = data_prep.load_clean()
     result = fairness_checks.group_price_bias(group_col=config.COL_TRANSMISSION)
     assert set(result[config.COL_TRANSMISSION]) == set(df[config.COL_TRANSMISSION].unique())
+
+
+def test_multi_group_bias_audit_defaults_to_all_categorical_features(trained: Path) -> None:
+    audit = fairness_checks.multi_group_bias_audit()
+    assert set(audit) == set(config.CATEGORICAL_FEATURES)
+    for group_col, table in audit.items():
+        assert group_col in table.columns
+        assert {"avg_true", "avg_pred", "count", "avg_error"} <= set(table.columns)
+
+
+def test_multi_group_bias_audit_respects_custom_group_cols(trained: Path) -> None:
+    audit = fairness_checks.multi_group_bias_audit(group_cols=[config.COL_TRANSMISSION])
+    assert set(audit) == {config.COL_TRANSMISSION}
+
+
+def test_multi_group_bias_audit_matches_single_column_call(trained: Path) -> None:
+    """multi_group_bias_audit must return the same table group_price_bias
+    would for the same column -- it's a batching convenience, not a
+    different computation."""
+    single = fairness_checks.group_price_bias(config.COL_FUEL_TYPE)
+    audit = fairness_checks.multi_group_bias_audit()
+    pd.testing.assert_frame_equal(
+        single.reset_index(drop=True), audit[config.COL_FUEL_TYPE].reset_index(drop=True)
+    )
+
+
+def test_multi_group_bias_audit_raises_when_no_model(raw_csv: Path) -> None:
+    with pytest.raises(FileNotFoundError):
+        fairness_checks.multi_group_bias_audit()
