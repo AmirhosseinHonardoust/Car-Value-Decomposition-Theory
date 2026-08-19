@@ -64,10 +64,7 @@ def main() -> None:
 
     r2_warning = load_r2_warning()
     if r2_warning is not None:
-        st.warning(
-            "This is an explainability-method demo, not a real pricing tool. "
-            f"{r2_warning}"
-        )
+        st.warning(f"This is an explainability-method demo, not a real pricing tool. {r2_warning}")
 
     tab_single, tab_compare, tab_market = st.tabs(
         ["Single Car Decoder", "Compare Two Cars", "Market Explorer"]
