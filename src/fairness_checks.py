@@ -24,7 +24,9 @@ def _predict_full_dataset() -> tuple[pd.DataFrame, pd.Series, np.ndarray]:
     return df, y, y_pred
 
 
-def _bias_table(df: pd.DataFrame, group_col: str, y: pd.Series, y_pred: np.ndarray) -> pd.DataFrame:
+def _bias_table(
+    df: pd.DataFrame, group_col: str, y: pd.Series, y_pred: np.ndarray
+) -> pd.DataFrame:
     if group_col not in df.columns:
         raise ValueError(f"Column {group_col} not found in dataframe.")
 
@@ -75,4 +77,3 @@ def multi_group_bias_audit(
 
     df, y, y_pred = _predict_full_dataset()
     return {col: _bias_table(df, col, y, y_pred) for col in cols}
-
