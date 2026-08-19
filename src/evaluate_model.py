@@ -7,6 +7,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
 from . import config, data_prep, features
+from .model_quality import describe_r2
 
 
 def evaluate_model() -> None:
@@ -43,6 +44,7 @@ def evaluate_model() -> None:
         json.dump(metrics, f, indent=2)
 
     print("Evaluation metrics:", metrics)
+    print(describe_r2(r2))
 
 
 if __name__ == "__main__":

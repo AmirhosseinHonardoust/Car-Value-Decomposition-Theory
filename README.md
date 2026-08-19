@@ -1,6 +1,7 @@
 <div align="center">
 
 # Car-Value-Decoding-Engine
+<img width="1262" height="472" alt="Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-RandomForestRegressor-orange)
@@ -66,6 +67,7 @@ This project can:
 - Compare two cars' specs and decompositions side by side
 - Compute global permutation feature importance
 - Compare average predicted vs. actual price across a categorical group (a basic bias/fairness check)
+- Automatically print and display a plain-language interpretation of R² every time the model is trained, evaluated, or queried — including a clear "worse than predicting the mean" warning when R² is negative — so the model's real predictive quality can't be missed
 - Provide a four-command CLI (`prepare-data`, `train`, `evaluate`, `decode-car`)
 - Provide a three-tab Streamlit dashboard (single-car decoder, car comparison, market explorer)
 - Run an isolated, fixture-based pytest suite in CI (ruff, black, mypy, pytest)
@@ -91,6 +93,7 @@ This project does **not**:
 - **Documented order-dependence** — a dedicated test (`tests/test_value_decomposition.py`) proves contributions change if the group order changes, so this known limitation can't silently regress
 - **Permutation importance** (`explainability.py`) for global feature ranking
 - **Group-level bias check** (`fairness_checks.py`) comparing average predicted vs. actual price per category
+- **Automatic R² interpretation** (`model_quality.py`) — a shared, tested function that `train`, `evaluate`, `decode-car`, and the Streamlit app all call to print/display an honest, plain-language read of model quality, instead of leaving a bare R² number for the reader to interpret
 - **CLI** with four subcommands and clear error handling (missing file, missing model, out-of-range index)
 - **Streamlit dashboard** with three tabs: single-car decoder, two-car comparison, market explorer
 - **Isolated pytest fixtures** (`tests/conftest.py`) that redirect every filesystem path to a throwaway temp directory, so tests never touch real project data
@@ -146,6 +149,7 @@ Car-Value-Decomposition-Theory/
 │   ├── explainability.py
 │   ├── fairness_checks.py
 │   ├── features.py
+│   ├── model_quality.py
 │   ├── train_model.py
 │   └── value_decomposition.py
 │
@@ -154,7 +158,10 @@ Car-Value-Decomposition-Theory/
 │   ├── test_cli.py
 │   ├── test_data_prep.py
 │   ├── test_evaluate_model.py
+│   ├── test_explainability.py
+│   ├── test_fairness_checks.py
 │   ├── test_features.py
+│   ├── test_model_quality.py
 │   ├── test_train_model.py
 │   └── test_value_decomposition.py
 │
@@ -338,6 +345,8 @@ Verified results on the full bundled dataset (2,500 rows, 80/20 split, `random_s
 
 > **A negative R² means this model performs worse than simply predicting the mean price for every car.** Checking the underlying data explains why: the correlation between `Price` and every numeric feature (Engine Size, Mileage, car age, km-per-year) is below 0.06 in magnitude across the board. On this particular bundled CSV, price appears to carry no real signal tied to the other columns. This is the most important caveat in this README — read the decomposition output as a demonstration of the *method*, not as evidence the model has learned anything predictive about car pricing.
 
+You don't have to rely on this README to catch that, though: `train`, `evaluate`, `decode-car`, and the Streamlit dashboard all print or display this same interpretation automatically (`src/model_quality.py`), every time you run them.
+
 ---
 
 ## Visual Reports
@@ -414,6 +423,7 @@ CI is defined in:
 | `src/value_decomposition.py` | Sequential group-swap decomposition of a prediction |
 | `src/explainability.py` | Global permutation feature importance |
 | `src/fairness_checks.py` | Average predicted-vs-actual price by category |
+| `src/model_quality.py` | Turns a raw R² number into an honest, plain-language interpretation, shared by the CLI and the app |
 | `src/cli.py` | Argparse CLI wiring the four subcommands together |
 | `app/app.py` | Streamlit dashboard |
 

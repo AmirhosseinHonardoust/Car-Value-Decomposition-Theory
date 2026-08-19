@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 
 from . import config, data_prep
 from .evaluate_model import evaluate_model
+from .model_quality import describe_r2
 from .train_model import train_price_model
 from .value_decomposition import decompose_value_for_row
 
@@ -49,6 +51,12 @@ def cmd_decode_car(args: argparse.Namespace) -> None:
     print("\nValue decomposition:")
     for k, v in dec.items():
         print(f"{k}: {v:.3f}")
+
+    metrics_path = config.REPORTS_METRICS_DIR / "regression_metrics.json"
+    if metrics_path.exists():
+        with metrics_path.open(encoding="utf-8") as f:
+            metrics = json.load(f)
+        print(f"\n{describe_r2(metrics['r2'])}")
 
 
 def build_parser() -> argparse.ArgumentParser:
