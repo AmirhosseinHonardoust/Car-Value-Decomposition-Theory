@@ -10,15 +10,28 @@ from sklearn.pipeline import Pipeline
 
 # --------------------------------------------------------------------
 # Make src importable
+#
+# Works two ways: if the project package is installed (`pip install -e .`,
+# as pyproject.toml supports), the plain `import src...` below succeeds
+# immediately. Otherwise (e.g. `streamlit run app/app.py` straight out of a
+# checkout, which is how CI's smoke test and most local runs invoke it), we
+# fall back to appending the repo root to sys.path. Only ImportError is
+# caught, so a real bug inside src/ still surfaces normally.
 # --------------------------------------------------------------------
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))
+try:
+    from src import config, data_prep, features
+    from src.model_quality import describe_r2
+    from src.train_model import train_price_model
+    from src.value_decomposition import decompose_value_for_row
+except ImportError:
+    ROOT = Path(__file__).resolve().parents[1]
+    if str(ROOT) not in sys.path:
+        sys.path.append(str(ROOT))
 
-from src import config, data_prep, features
-from src.model_quality import describe_r2
-from src.train_model import train_price_model
-from src.value_decomposition import decompose_value_for_row
+    from src import config, data_prep, features
+    from src.model_quality import describe_r2
+    from src.train_model import train_price_model
+    from src.value_decomposition import decompose_value_for_row
 
 
 # --------------------------------------------------------------------
