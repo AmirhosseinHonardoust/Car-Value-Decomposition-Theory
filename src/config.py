@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Base paths
@@ -14,7 +15,12 @@ TEST_SIZE = 0.2
 # Reference year used to compute car_age (current_year - Year). Kept as a
 # single named constant because it's used identically in both src/data_prep.py
 # and app/app.py -- previously duplicated as a bare literal in both places.
-REFERENCE_YEAR = 2020
+#
+# Default stays fixed at 2020 rather than the current year, so the model,
+# tests, and the README's verified example numbers stay reproducible without
+# an explicit opt-in. Override with the CAR_VALUE_REFERENCE_YEAR env var
+# (e.g. to re-derive car_age from today's date) if you want that instead.
+REFERENCE_YEAR = int(os.environ.get("CAR_VALUE_REFERENCE_YEAR", "2020"))
 
 # === COLUMN MAPPING FOR YOUR DATASET ===
 # Your CSV has:

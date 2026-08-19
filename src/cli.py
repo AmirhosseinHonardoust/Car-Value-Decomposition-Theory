@@ -31,7 +31,7 @@ def cmd_decode_car(args: argparse.Namespace) -> None:
         raise IndexError(f"Index {idx} is out of range for dataset of size {len(df)}.")
 
     row = df.iloc[idx]
-    dec = decompose_value_for_row(row)
+    dec = decompose_value_for_row(row, n_orderings=args.orderings)
 
     print("Car specs:")
     cols_to_show = [
@@ -80,6 +80,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=0,
         help="Row index from the cleaned dataset to decode.",
+    )
+    p_decode.add_argument(
+        "--orderings",
+        type=int,
+        default=1,
+        help=(
+            "Number of random group orderings to average contributions over. "
+            "Default of 1 uses the fixed baseline order (unchanged prior "
+            "behavior); pass >1 for a Monte Carlo Shapley approximation."
+        ),
     )
     p_decode.set_defaults(func=cmd_decode_car)
 

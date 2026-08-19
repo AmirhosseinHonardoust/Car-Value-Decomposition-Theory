@@ -95,7 +95,7 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
             index=0,
         )
         owner = st.number_input(
-            "Number of previous owners (Car ID is not used as ID here, just numeric)",
+            "Car ID (kept for completeness, not used as a modeling feature)",
             min_value=int(df[config.COL_OWNER].min()),
             max_value=int(df[config.COL_OWNER].max()),
             value=int(example_row[config.COL_OWNER]),
@@ -126,6 +126,13 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
         value=str(example_row.get(config.COL_CAR_NAME, "Model")),
     )
 
+    n_orderings = st.slider(
+        "Orderings to average (1 = fixed baseline order, >1 = Shapley approximation)",
+        min_value=1,
+        max_value=50,
+        value=1,
+    )
+
     if st.button("Decode Car Value"):
         # Compute engineered features consistent with data_prep
         car_age = config.REFERENCE_YEAR - year
@@ -151,7 +158,7 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
         df_input = pd.DataFrame([row_dict])
 
         # Decode value
-        dec = decompose_value_for_row(df_input.iloc[0])
+        dec = decompose_value_for_row(df_input.iloc[0], n_orderings=n_orderings)
 
         st.markdown("### Predicted Price")
         st.metric("Predicted selling price", f"{dec['final_prediction']:.2f}")
