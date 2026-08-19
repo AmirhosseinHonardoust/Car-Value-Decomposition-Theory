@@ -14,7 +14,7 @@ def evaluate_model() -> None:
     df = data_prep.load_clean()
     X, y = features.get_feature_matrix(df)
 
-    X_train, X_test, y_train, y_test = train_test_split(
+    _X_train, X_test, _y_train, y_test = train_test_split(
         X,
         y,
         test_size=config.TEST_SIZE,

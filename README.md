@@ -277,7 +277,7 @@ This is **not** the same guarantee Shapley values give. Shapley values average t
 
 `tests/test_value_decomposition.py::test_contributions_are_order_dependent_known_limitation` proves this by reversing the group order and confirming at least one contribution changes. This test exists specifically so the limitation can't silently disappear or get "fixed" without anyone noticing.
 
-`decompose_value_for_row` also accepts an opt-in `n_orderings` parameter. The default, `n_orderings=1`, is the exact behavior described above and is unchanged. Passing `n_orderings > 1` (plus an optional `random_state`) instead averages the per-group contributions over that many random group orderings — a cheap Monte Carlo approximation of a true Shapley-value average over *every* ordering. The reconstruction identity still holds exactly for the averaged result, because each individual ordering's contributions already sum to the same base-to-final delta regardless of order. This is not wired into the CLI or Streamlit app by default; call it directly (`decompose_value_for_row(row, n_orderings=25)`) if you want smoothed-out contributions instead of the fixed-order ones.
+`decompose_value_for_row` also accepts an opt-in `n_orderings` parameter. The default, `n_orderings=1`, is the exact behavior described above and is unchanged. Passing `n_orderings > 1` (plus an optional `random_state`) instead averages the per-group contributions over that many random group orderings — a cheap Monte Carlo approximation of a true Shapley-value average over *every* ordering. The reconstruction identity still holds exactly for the averaged result, because each individual ordering's contributions already sum to the same base-to-final delta regardless of order. The default (`n_orderings=1`) is still what the CLI and Streamlit app use out of the box. To get smoothed-out contributions instead, pass `python -m src.cli decode-car --orderings 25`, use the "Orderings to average" slider in the Streamlit app, or call `decompose_value_for_row(row, n_orderings=25)` directly.
 
 ---
 
@@ -446,7 +446,7 @@ This project has important limitations:
 - The decomposition method is order-dependent, not a true Shapley-value average — documented and tested, but still a real limitation of the current implementation
 - `reference_year` for computing car age is a hardcoded constant, not derived from the current date
 - The bias check compares only average predicted vs. actual price per single category; it isn't a full fairness audit
-- Trained and evaluated on one bundled Kaggle CSV only — no external or out-of-sample validation
+- Trained and evaluated on one bundled Kaggle CSV only — no external or out-of-sample validation (see [`data/raw/README.md`](data/raw/README.md) for provenance)
 - The Streamlit app has no automated test coverage of its own beyond the pure logic it shares with `src/`
 
 ---
@@ -472,12 +472,14 @@ A real deployment would need a dataset with genuine price signal, external valid
 
 ## Future Improvements
 
-- Wire the opt-in multi-ordering (`n_orderings`) averaging into the CLI and Streamlit app as a user-facing toggle, instead of requiring a direct function call
 - Validate against a dataset with real, verifiable price signal
 - Expand the bias check into a fuller fairness audit across multiple groups at once
-- Derive `reference_year` from the current date instead of a hardcoded constant
-- Add a lightweight smoke test for the Streamlit app
 - Explore gradient-boosted alternatives to the Random Forest baseline
+
+Done since the initial audit: multi-ordering averaging is now exposed via `--orderings`
+on the CLI and a slider in the Streamlit app; `REFERENCE_YEAR` is now overridable via the
+`CAR_VALUE_REFERENCE_YEAR` env var (default unchanged at 2020); a Streamlit-import smoke
+test now covers `app/app.py`.
 
 ---
 
