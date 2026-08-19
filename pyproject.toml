@@ -2,7 +2,7 @@
 name = "car-value-decomposition-theory"
 version = "0.1.0"
 description = "A transparent ML system that decomposes predicted car prices into interpretable value components."
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [tool.ruff]
 line-length = 100

@@ -55,7 +55,6 @@ def isolated_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(config, "MODELS_DIR", tmp_path / "models")
     monkeypatch.setattr(config, "REPORTS_DIR", tmp_path / "reports")
     monkeypatch.setattr(config, "REPORTS_METRICS_DIR", tmp_path / "reports" / "metrics")
-    monkeypatch.setattr(config, "REPORTS_FIGURES_DIR", tmp_path / "reports" / "figures")
     monkeypatch.setattr(config, "MODEL_PATH", tmp_path / "models" / "price_model.joblib")
     monkeypatch.setattr(config, "BASELINE_STATS_PATH", tmp_path / "models" / "baseline_stats.json")
     return tmp_path

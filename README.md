@@ -3,7 +3,7 @@
 # Car-Value-Decoding-Engine
 <img width="1262" height="472" alt="Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-RandomForestRegressor-orange)
 ![Explainability](https://img.shields.io/badge/Explainability-Value%20Decomposition-9C27B0)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
@@ -91,6 +91,7 @@ This project does **not**:
 - **Random Forest price model** (`RandomForestRegressor`, 300 trees) trained via a `ColumnTransformer` + `Pipeline` (scaling for numerics, one-hot encoding for categoricals)
 - **Sequential group-swap decomposition** (`value_decomposition.py`) — swaps each feature group from a baseline row into the sample row one group at a time and measures the prediction delta, so contributions always sum exactly to the final prediction
 - **Documented order-dependence** — a dedicated test (`tests/test_value_decomposition.py`) proves contributions change if the group order changes, so this known limitation can't silently regress
+- **Opt-in Shapley approximation** — `decompose_value_for_row(row, n_orderings=N)` averages contributions over `N` random group orderings instead of one fixed order, while still reconstructing exactly to the final prediction
 - **Permutation importance** (`explainability.py`) for global feature ranking
 - **Group-level bias check** (`fairness_checks.py`) comparing average predicted vs. actual price per category
 - **Automatic R² interpretation** (`model_quality.py`) — a shared, tested function that `train`, `evaluate`, `decode-car`, and the Streamlit app all call to print/display an honest, plain-language read of model quality, instead of leaving a bare R² number for the reader to interpret
@@ -207,6 +208,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Dependency versions are pinned in `requirements.txt` / `requirements-dev.txt` for reproducible installs.
+
 For development tools (pytest, ruff, black, mypy):
 
 ```bash
@@ -272,7 +275,9 @@ This is **not** the same guarantee Shapley values give. Shapley values average t
 - The reconstruction identity always holds — it's a property of the arithmetic, not evidence the attribution is "correct"
 - Per-group numbers can change if the group order changes, for the same car and the same model
 
-`tests/test_value_decomposition.py::test_contributions_are_order_dependent_known_limitation` proves this by reversing the group order and confirming at least one contribution changes. This test exists specifically so the limitation can't silently disappear or get "fixed" without anyone noticing. A cheap approximation of true Shapley values — averaging over several random group orderings — is tracked as a future improvement rather than implemented here.
+`tests/test_value_decomposition.py::test_contributions_are_order_dependent_known_limitation` proves this by reversing the group order and confirming at least one contribution changes. This test exists specifically so the limitation can't silently disappear or get "fixed" without anyone noticing.
+
+`decompose_value_for_row` also accepts an opt-in `n_orderings` parameter. The default, `n_orderings=1`, is the exact behavior described above and is unchanged. Passing `n_orderings > 1` (plus an optional `random_state`) instead averages the per-group contributions over that many random group orderings — a cheap Monte Carlo approximation of a true Shapley-value average over *every* ordering. The reconstruction identity still holds exactly for the averaged result, because each individual ordering's contributions already sum to the same base-to-final delta regardless of order. This is not wired into the CLI or Streamlit app by default; call it directly (`decompose_value_for_row(row, n_orderings=25)`) if you want smoothed-out contributions instead of the fixed-order ones.
 
 ---
 
@@ -467,11 +472,10 @@ A real deployment would need a dataset with genuine price signal, external valid
 
 ## Future Improvements
 
-- Average decomposition contributions over multiple group orderings (a cheap Shapley approximation)
+- Wire the opt-in multi-ordering (`n_orderings`) averaging into the CLI and Streamlit app as a user-facing toggle, instead of requiring a direct function call
 - Validate against a dataset with real, verifiable price signal
 - Expand the bias check into a fuller fairness audit across multiple groups at once
 - Derive `reference_year` from the current date instead of a hardcoded constant
-- Add test coverage for `explainability.py` and `fairness_checks.py`
 - Add a lightweight smoke test for the Streamlit app
 - Explore gradient-boosted alternatives to the Random Forest baseline
 
