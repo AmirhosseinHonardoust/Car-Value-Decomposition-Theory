@@ -1,7 +1,7 @@
 <div align="center">
 
 # Car-Value-Decoding-Engine
-<img width="1262" height="472" alt="Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
+<img width="1672" height="941" alt="Car-Value-Decomposition-Theory" src="https://github.com/user-attachments/assets/d0fdbce2-d91e-464d-b2c1-f6a5faf04de8" />
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-RandomForestRegressor-orange)
@@ -58,6 +58,8 @@ The system covers the full loop: data cleaning and feature engineering, model tr
 ---
 
 ## What This Project Does
+
+<img width="1262" height="472" alt="Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
 
 This project can:
 
