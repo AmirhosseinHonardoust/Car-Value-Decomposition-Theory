@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
 from . import config, data_prep, features
+from .model_quality import describe_r2
 
 
 def compute_baseline_stats(X) -> dict[str, float | str]:
@@ -96,6 +97,7 @@ def train_price_model() -> None:
 
     print(f"Saved model to {config.MODEL_PATH}")
     print("Metrics:", metrics)
+    print(describe_r2(r2))
 
 
 if __name__ == "__main__":

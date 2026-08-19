@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
 from src import config, data_prep, features
+from src.model_quality import describe_r2
 from src.train_model import train_price_model
 from src.value_decomposition import decompose_value_for_row
 
@@ -35,6 +36,22 @@ def load_model():
     return joblib.load(config.MODEL_PATH)
 
 
+def load_r2_warning() -> str | None:
+    """Read the saved training metrics and return an honest R^2 interpretation.
+
+    Returns None if metrics haven't been written yet (shouldn't normally
+    happen once load_model() has run, since training always saves metrics).
+    """
+    metrics_path = config.REPORTS_METRICS_DIR / "regression_metrics.json"
+    if not metrics_path.exists():
+        return None
+    import json
+
+    with metrics_path.open(encoding="utf-8") as f:
+        metrics = json.load(f)
+    return describe_r2(metrics["r2"])
+
+
 # --------------------------------------------------------------------
 # Streamlit app
 # --------------------------------------------------------------------
@@ -44,6 +61,10 @@ def main() -> None:
 
     df = load_data()
     model = load_model()  # noqa: F841  # kept for future extensions
+
+    r2_warning = load_r2_warning()
+    if r2_warning is not None:
+        st.warning(f"This is an explainability-method demo, not a real pricing tool. {r2_warning}")
 
     tab_single, tab_compare, tab_market = st.tabs(
         ["Single Car Decoder", "Compare Two Cars", "Market Explorer"]
