@@ -6,8 +6,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Then copy the rest of the project.
+# Then copy the rest of the project and install the package itself (deps
+# are already satisfied by the layer above) so the `car-value` console
+# script works inside the container too, matching the CI quality-gate job.
 COPY . .
+RUN pip install --no-cache-dir -e . --no-deps
 
 # data/processed, models/, and reports/metrics/ are generated on first run
 # by src.train_model (see .gitignore) -- nothing to build here.
