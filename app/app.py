@@ -51,6 +51,18 @@ def load_model() -> Pipeline:
     return joblib.load(config.MODEL_PATH)
 
 
+@st.cache_resource
+def load_baseline() -> tuple[dict[str, object], dict[str, list[str]]]:
+    """Load and cache baseline_stats.json's baseline_features and groups.
+
+    train_price_model() always writes baseline_stats.json alongside the
+    model, so this is safe to call anywhere after load_model() has run.
+    """
+    with config.BASELINE_STATS_PATH.open("r", encoding="utf-8") as f:
+        baseline_stats = json.load(f)
+    return baseline_stats["baseline_features"], baseline_stats["groups"]
+
+
 def load_r2_warning() -> str | None:
     """Read the saved training metrics and return an honest R^2 interpretation.
 
@@ -68,7 +80,10 @@ def load_r2_warning() -> str | None:
 # --------------------------------------------------------------------
 # Tab 1: Single Car Decoder
 # --------------------------------------------------------------------
-def render_single_car_tab(df: pd.DataFrame) -> None:
+def render_single_car_tab(
+    df: pd.DataFrame,
+    preloaded: tuple[Pipeline, dict[str, object], dict[str, list[str]]],
+) -> None:
     st.subheader("Decode the value of a single car")
 
     # Use a random row as a reasonable default
@@ -170,7 +185,9 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
         df_input = pd.DataFrame([row_dict])
 
         # Decode value
-        dec = decompose_value_for_row(df_input.iloc[0], n_orderings=n_orderings)
+        dec = decompose_value_for_row(
+            df_input.iloc[0], n_orderings=n_orderings, preloaded=preloaded
+        )
 
         st.markdown("### Predicted Price")
         st.metric("Predicted selling price", f"{dec['final_prediction']:.2f}")
@@ -192,7 +209,10 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
 # --------------------------------------------------------------------
 # Tab 2: Compare Two Cars
 # --------------------------------------------------------------------
-def render_compare_tab(df: pd.DataFrame) -> None:
+def render_compare_tab(
+    df: pd.DataFrame,
+    preloaded: tuple[Pipeline, dict[str, object], dict[str, list[str]]],
+) -> None:
     st.subheader("Compare two cars from the dataset")
 
     idx1 = st.number_input("Index of first car", min_value=0, max_value=len(df) - 1, value=0)
@@ -202,8 +222,8 @@ def render_compare_tab(df: pd.DataFrame) -> None:
         row1 = df.iloc[int(idx1)]
         row2 = df.iloc[int(idx2)]
 
-        dec1 = decompose_value_for_row(row1)
-        dec2 = decompose_value_for_row(row2)
+        dec1 = decompose_value_for_row(row1, preloaded=preloaded)
+        dec2 = decompose_value_for_row(row2, preloaded=preloaded)
 
         st.markdown("### Car 1 Specs")
         st.json(row1.to_dict())
@@ -242,7 +262,9 @@ def main() -> None:
     st.title("Car-Value-Decoding-Engine")
 
     df = load_data()
-    load_model()  # trains the model on first run if it doesn't exist yet
+    model = load_model()  # trains the model on first run if it doesn't exist yet
+    baseline_features, groups = load_baseline()
+    preloaded = (model, baseline_features, groups)
 
     r2_warning = load_r2_warning()
     if r2_warning is not None:
@@ -253,10 +275,10 @@ def main() -> None:
     )
 
     with tab_single:
-        render_single_car_tab(df)
+        render_single_car_tab(df, preloaded)
 
     with tab_compare:
-        render_compare_tab(df)
+        render_compare_tab(df, preloaded)
 
     with tab_market:
         render_market_tab(df)

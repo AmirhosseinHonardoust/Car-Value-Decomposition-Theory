@@ -31,12 +31,13 @@ def app(raw_csv: Path) -> AppTest:
     """
     # st.cache_data/st.cache_resource caches are process-global, keyed by
     # function identity + args -- not by which AppTest session is running.
-    # Without clearing them, a later test's (args-free) load_model() call
-    # can silently return an earlier test's cached Pipeline instead of
-    # training + writing one to *this* test's isolated MODEL_PATH, which
-    # then breaks decompose_value_for_row() (it reads straight from disk,
-    # bypassing the cache) with a spurious "model not found". Clearing
-    # before each run keeps every test's app session fully independent.
+    # Without clearing them, a later test's (args-free) load_model()/
+    # load_baseline() calls can silently return an earlier test's cached
+    # Pipeline/baseline instead of training + writing fresh ones for
+    # *this* test's isolated MODEL_PATH -- which then breaks
+    # decompose_value_for_row() (fed that stale preloaded tuple from
+    # app.py) with mismatched or missing model state. Clearing before
+    # each run keeps every test's app session fully independent.
     import streamlit as st
 
     st.cache_data.clear()
