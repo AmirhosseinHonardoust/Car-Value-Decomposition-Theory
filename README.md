@@ -408,6 +408,15 @@ Run unit tests locally:
 pytest
 ```
 
+With coverage (matches CI):
+
+```bash
+pytest -q --cov=src --cov=app --cov-report=term-missing --cov-fail-under=90
+```
+
+Current coverage is ~96% across `src/` and `app/`; the gate is set to 90% to
+leave headroom rather than pinning to the exact current number.
+
 Lint, format-check, and type-check:
 
 ```bash
@@ -418,11 +427,18 @@ mypy .
 
 The GitHub Actions workflow runs, in order:
 
-- dependency installation
+- dependency installation (`requirements-dev.txt`, then an editable,
+  no-deps install of the package itself so `[project.scripts]`'s
+  `car-value` console entry point is exercised)
 - `ruff check .`
 - `black --check .`
 - `mypy .`
-- `pytest -q`
+- `pytest -q` with coverage (`--cov-fail-under=90`)
+- `car-value --help` as an entry-point smoke test
+
+Dependency updates (pip, GitHub Actions, and the Dockerfile's base image)
+are proposed automatically on a weekly schedule by Dependabot
+(`.github/dependabot.yml`).
 
 CI is defined in:
 

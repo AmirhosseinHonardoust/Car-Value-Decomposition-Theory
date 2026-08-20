@@ -13,7 +13,7 @@ typecheck:
 	mypy .
 
 test:
-	pytest -q
+	pytest -q --cov=src --cov=app --cov-report=term-missing --cov-fail-under=90
 
 check: lint format typecheck test
 
