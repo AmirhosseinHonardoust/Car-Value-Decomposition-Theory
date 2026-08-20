@@ -59,8 +59,6 @@ The system covers the full loop: data cleaning and feature engineering, model tr
 
 ## What This Project Does
 
-<img width="1262" height="472" alt="Car Value Decoding Engine" src="https://github.com/user-attachments/assets/6dc677e5-437d-43c0-9f8b-099ca1ba179e" />
-
 This project can:
 
 - Clean and engineer features from a raw car-listing CSV (car age, mileage-per-year, brand extraction)
@@ -481,7 +479,7 @@ This project has important limitations:
 - `reference_year` for computing car age is a hardcoded constant, not derived from the current date
 - The bias check (`group_price_bias` / `multi_group_bias_audit`) compares only average predicted vs. actual price per category, one categorical column at a time — no intersectional analysis, no protected-attribute framing; it isn't a full fairness audit
 - Trained and evaluated on one bundled Kaggle CSV only — no external or out-of-sample validation (see [`data/raw/README.md`](data/raw/README.md) for provenance)
-- The Streamlit app has no automated test coverage of its own beyond the pure logic it shares with `src/`
+- The Streamlit app's automated coverage (`tests/test_app_render.py`, via Streamlit's `AppTest` harness) exercises all three tabs — Single Car Decoder, Compare, and Market Explorer — end to end, but it's still UI-level rendering checks, not a substitute for manual exploratory testing of the live app
 
 ---
 
