@@ -31,3 +31,16 @@ jobs:
 
       - name: Pytest
         run: pytest -q
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ubuntu-latest runners ship Docker preinstalled, so this just proves
+      # the Dockerfile still builds -- no registry login or push involved.
+      # Catches breakage (e.g. a requirements.txt change, a moved file the
+      # COPY step relied on) that the Python quality-gate job above can't
+      # see, since it never touches the Dockerfile.
+      - name: Build image
+        run: docker build -t car-value:ci .
