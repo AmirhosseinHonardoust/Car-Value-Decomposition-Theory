@@ -148,11 +148,9 @@ def render_single_car_tab(df: pd.DataFrame) -> None:
     )
 
     if st.button("Decode Car Value"):
-        # Compute engineered features consistent with data_prep
-        car_age = config.REFERENCE_YEAR - year
-        if car_age <= 0:
-            car_age = 1
-        km_per_year = kms / car_age if car_age > 0 else kms
+        # Compute engineered features using the same helpers data_prep uses
+        car_age = data_prep.compute_car_age(year)
+        km_per_year = data_prep.compute_km_per_year(kms, car_age)
 
         # Build one-row dataframe
         row_dict = {

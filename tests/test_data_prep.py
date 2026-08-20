@@ -19,6 +19,29 @@ def test_load_raw_reads_csv(raw_csv: Path, tiny_raw_df: pd.DataFrame) -> None:
     assert list(df.columns) == list(tiny_raw_df.columns)
 
 
+def test_compute_car_age_normal_case() -> None:
+    assert data_prep.compute_car_age(2015, reference_year=2020) == 5
+
+
+def test_compute_car_age_clamps_at_or_after_reference_year() -> None:
+    # Year == reference_year would give age 0; year > reference_year would
+    # give a negative age. Both clamp to 1, matching clean_data()'s rule.
+    assert data_prep.compute_car_age(2020, reference_year=2020) == 1
+    assert data_prep.compute_car_age(2022, reference_year=2020) == 1
+
+
+def test_compute_car_age_uses_config_default_when_unset() -> None:
+    assert data_prep.compute_car_age(2015) == config.REFERENCE_YEAR - 2015
+
+
+def test_compute_km_per_year_normal_case() -> None:
+    assert data_prep.compute_km_per_year(kms=50000, car_age=5) == 10000
+
+
+def test_compute_km_per_year_clamps_negative_to_zero() -> None:
+    assert data_prep.compute_km_per_year(kms=-100, car_age=5) == 0.0
+
+
 def test_clean_data_adds_engineered_columns(tiny_raw_df: pd.DataFrame) -> None:
     cleaned = data_prep.clean_data(tiny_raw_df)
     assert config.COL_CAR_AGE in cleaned.columns

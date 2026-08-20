@@ -14,6 +14,28 @@ def load_raw() -> pd.DataFrame:
     return df
 
 
+def compute_car_age(year: int, reference_year: int | None = None) -> int:
+    """Compute a car's age from its model year, clamped to a minimum of 1.
+
+    Shared by clean_data() (applied per-row over the full dataset) and
+    app.py's single-car input builder, so the "year >= reference_year ->
+    age clamped to 1" rule can't drift between the two the way it could
+    when each one reimplemented the formula separately.
+    """
+    ref = config.REFERENCE_YEAR if reference_year is None else reference_year
+    age = ref - year
+    return age if age > 0 else 1
+
+
+def compute_km_per_year(kms: float, car_age: float) -> float:
+    """Compute km driven per year of car age, clamped to a minimum of 0.
+
+    Assumes car_age > 0, which compute_car_age() already guarantees.
+    """
+    value = kms / car_age
+    return value if value > 0 else 0.0
+
+
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
@@ -55,13 +77,13 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.select_dtypes(include=["object", "str"]).columns:
         df[col] = df[col].fillna("Unknown")
 
-    # Compute car age using a reference year
-    df[config.COL_CAR_AGE] = config.REFERENCE_YEAR - df[config.COL_YEAR]
-    df.loc[df[config.COL_CAR_AGE] <= 0, config.COL_CAR_AGE] = 1
-
-    # Compute km_per_year
-    df[config.COL_KM_PER_YEAR] = df[config.COL_KMS_DRIVEN] / df[config.COL_CAR_AGE]
-    df[config.COL_KM_PER_YEAR] = df[config.COL_KM_PER_YEAR].clip(lower=0)
+    # Compute car age and km/year via the shared helpers above (also used
+    # by app.py's single-car input builder), so the two can't drift.
+    df[config.COL_CAR_AGE] = df[config.COL_YEAR].apply(compute_car_age)
+    df[config.COL_KM_PER_YEAR] = df.apply(
+        lambda r: compute_km_per_year(r[config.COL_KMS_DRIVEN], r[config.COL_CAR_AGE]),
+        axis=1,
+    )
 
     return df
 
