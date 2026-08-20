@@ -18,7 +18,9 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e . --no-deps
 
       - name: Ruff
         run: ruff check .
@@ -29,8 +31,11 @@ jobs:
       - name: Mypy
         run: mypy .
 
-      - name: Pytest
-        run: pytest -q
+      - name: Pytest (with coverage)
+        run: pytest -q --cov=src --cov=app --cov-report=term-missing --cov-fail-under=90
+
+      - name: Console entry point smoke test
+        run: car-value --help
 
   docker-build:
     runs-on: ubuntu-latest
