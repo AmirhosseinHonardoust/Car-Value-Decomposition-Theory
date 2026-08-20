@@ -90,6 +90,7 @@ def decompose_value_for_row(
     *,
     n_orderings: int = 1,
     random_state: int | None = None,
+    preloaded: tuple[Pipeline, dict[str, object], dict[str, list[str]]] | None = None,
 ) -> dict[str, float]:
     """Decompose the predicted price for a given car into value components.
 
@@ -107,8 +108,18 @@ def decompose_value_for_row(
     approximation of a true Shapley-value attribution, which averages over
     *every* possible ordering. This is opt-in and does not change the
     default single-ordering behavior or its output.
+
+    preloaded: optional (model, baseline_features, groups) tuple, as
+    returned by load_model_and_baseline(). Pass this when the caller
+    already has these cached (e.g. app.py's st.cache_resource-backed
+    load_model()/load_baseline()) to avoid reloading the model pickle and
+    re-parsing baseline_stats.json from disk on every call. Defaults to
+    None, which loads from disk exactly as before.
     """
-    model, baseline_features, groups = load_model_and_baseline()
+    if preloaded is not None:
+        model, baseline_features, groups = preloaded
+    else:
+        model, baseline_features, groups = load_model_and_baseline()
 
     baseline_df = build_feature_row_from_baseline(baseline_features)
     sample_df = build_feature_row_from_sample(row, baseline_features)

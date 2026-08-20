@@ -28,6 +28,24 @@ def trained(raw_csv: Path) -> Path:
     return raw_csv
 
 
+def test_decompose_value_with_preloaded_matches_loading_from_disk(trained: Path) -> None:
+    """preloaded=(model, baseline_features, groups) must be equivalent to
+    the default disk-loading path -- it's purely an optimization to avoid
+    redundant joblib.load()/json.load() calls in callers (e.g. app.py)
+    that already have these cached, not a behavior change."""
+    df = data_prep.load_clean()
+    row = df.iloc[0]
+
+    from_disk = value_decomposition.decompose_value_for_row(row, n_orderings=4, random_state=5)
+
+    preloaded = value_decomposition.load_model_and_baseline()
+    from_preloaded = value_decomposition.decompose_value_for_row(
+        row, n_orderings=4, random_state=5, preloaded=preloaded
+    )
+
+    assert_decompositions_close(from_disk, from_preloaded)
+
+
 def test_decompose_value_reconstructs_final_prediction(trained: Path) -> None:
     df = data_prep.load_clean()
     row = df.iloc[0]
