@@ -5,7 +5,27 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `tests/test_cli_entrypoint.py`: verifies the `car-value` console script
+  (`[project.scripts]` in `pyproject.toml`) is registered correctly and
+  actually runs, closing a gap where CI only ever exercised `src.cli` via
+  `python -m src.cli` / `pythonpath`, never the packaged entry point.
+- Coverage reporting via `pytest-cov`, wired into `make test` and CI
+  (`--cov=src --cov=app --cov-fail-under=90`; actual coverage is ~96%).
+- `.github/dependabot.yml`: weekly automated update PRs for pip,
+  GitHub Actions, and the Dockerfile's base image, so the project's
+  exact-pinned dependency versions don't silently go stale.
+
 ### Fixed
+- `requirements-dev.txt` was missing `pandas-stubs`, which
+  `pyproject.toml`'s `[project.optional-dependencies].dev` already
+  included and which the pre-commit mypy hook depends on -- the two
+  dev-dependency lists now match.
+- CI's `Install dependencies` step now also does an editable, `--no-deps`
+  install of the package itself (`pip install -e .`), so the `car-value`
+  console script actually exists when CI runs, instead of only ever
+  being installed by a developer running the full `pip install -e .[dev]`
+  locally.
 - `src/data_prep.py`: silenced a pandas 4 `Pandas4Warning` by passing
   `include=["object", "str"]` to `select_dtypes` explicitly, instead of
   relying on pandas 4's deprecated object-includes-str backward-compat
