@@ -9,7 +9,7 @@ description = "A transparent ML system that decomposes predicted car prices into
 requires-python = ">=3.12"
 dependencies = [
     "pandas==3.0.5",
-    "numpy==2.5.2",
+    "numpy==2.5.3",
     "scikit-learn==1.9.0",
     "joblib==1.5.3",
     "streamlit==1.61.1",
